@@ -92,7 +92,7 @@ RUN mkdir -p /etc/pip && \
     
 # Install Python dependencies from requirements.txt
 COPY requirements.txt /tmp/requirements.txt
-RUN pip3 install -r /tmp/requirements.txt
+RUN pip install --break-system-packages -r /tmp/requirements.txt
 
 # Copy entrypoint script and Odoo configuration file
 COPY ./entrypoint.sh /
