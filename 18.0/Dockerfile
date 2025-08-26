@@ -10,8 +10,14 @@ ENV LANG en_US.UTF-8
 ARG TARGETARCH
 
 # Use Tencent source to replace the default source
-RUN sed -i 's@http://archive.ubuntu.com/ubuntu/@http://mirrors.tencent.com/ubuntu/@g' /etc/apt/sources.list && \
-    sed -i 's@http://security.ubuntu.com/ubuntu/@http://mirrors.tencent.com/ubuntu/@g' /etc/apt/sources.list
+RUN cat > /etc/apt/sources.list.d/ubuntu.sources << 'EOF'
+Types: deb
+URIs: http://mirrors.tencent.com/ubuntu/
+Suites: noble noble-updates noble-backports noble-security
+Components: main restricted universe multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+EOF
+
 
 # Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
 
@@ -86,9 +92,11 @@ RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/od
 
 # Configure Tencent pip source
 RUN mkdir -p /etc/pip \
-    && echo "[global]" > /etc/pip/pip.conf \
-    && echo "index-url = https://mirrors.cloud.tencent.com/pypi/simple" >> /etc/pip/pip.conf \
-    && echo "trusted-host = mirrors.cloud.tencent.com" >> /etc/pip/pip.conf
+    && cat > /etc/pip/pip.conf << 'EOF'
+[global]
+index-url = https://mirrors.cloud.tencent.com/pypi/simple
+trusted-host = mirrors.cloud.tencent.com
+EOF
     
 # Install Python dependencies from requirements.txt
 COPY requirements.txt /tmp/requirements.txt
