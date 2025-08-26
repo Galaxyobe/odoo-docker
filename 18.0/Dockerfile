@@ -9,6 +9,10 @@ ENV LANG en_US.UTF-8
 # Retrieve the target architecture to install the correct wkhtmltopdf package
 ARG TARGETARCH
 
+# Use Tencent source to replace the default source
+RUN sed -i 's@http://archive.ubuntu.com/ubuntu/@http://mirrors.tencent.com/ubuntu/@g' /etc/apt/sources.list && \
+    sed -i 's@http://security.ubuntu.com/ubuntu/@http://mirrors.tencent.com/ubuntu/@g' /etc/apt/sources.list
+
 # Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
 
 RUN apt-get update && \
@@ -80,6 +84,12 @@ RUN curl -o odoo.deb -sSL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/od
     && apt-get -y install --no-install-recommends ./odoo.deb \
     && rm -rf /var/lib/apt/lists/* odoo.deb
 
+# Configure Tencent pip source
+RUN mkdir -p /etc/pip \
+    && echo "[global]" > /etc/pip/pip.conf \
+    && echo "index-url = https://mirrors.cloud.tencent.com/pypi/simple" >> /etc/pip/pip.conf \
+    && echo "trusted-host = mirrors.cloud.tencent.com" >> /etc/pip/pip.conf
+    
 # Install Python dependencies from requirements.txt
 COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install -r /tmp/requirements.txt
